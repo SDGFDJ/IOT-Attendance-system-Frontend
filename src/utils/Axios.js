@@ -5,10 +5,10 @@ const baseURL = import.meta.env.VITE_API_URL;
 
 const Axios = axios.create({
   baseURL,
-  withCredentials: true,
+  withCredentials: true, // Because refresh token is cookie-based
 });
 
-// Flag to avoid multiple refresh requests
+// Avoid multiple refresh requests
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -24,10 +24,11 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// Request interceptor
+// Request Interceptor
 Axios.interceptors.request.use(
-  async (config) => {
-    const accessToken = localStorage.getItem("accesstoken");
+  (config) => {
+    const accessToken = localStorage.getItem("accessToken");
+
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -36,7 +37,21 @@ Axios.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor
+// Refresh Token Function
+const refreshAccessToken = async () => {
+  const refreshToken = localStorage.getItem("refreshToken");
+
+  const response = await Axios({
+    ...SummaryApi.refreshToken,
+    headers: {
+      Authorization: `Bearer ${refreshToken}`,
+    },
+  });
+
+  return response.data.data.accessToken;
+};
+
+// Response Interceptor (Auto Refresh Token)
 Axios.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -57,24 +72,20 @@ Axios.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (!refreshToken) {
-        handleLogout();
-        return Promise.reject(error);
-      }
-
       try {
-        const newAccessToken = await refreshAccessToken(refreshToken);
-        localStorage.setItem("accesstoken", newAccessToken);
-        Axios.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
-        processQueue(null, newAccessToken);
+        const newToken = await refreshAccessToken();
 
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        localStorage.setItem("accessToken", newToken);
+        Axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+
+        processQueue(null, newToken);
+
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return Axios(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError, null);
-        handleLogout();
-        return Promise.reject(refreshError);
+      } catch (err) {
+        processQueue(err, null);
+        logoutUser(); // Redirect & clear storage
+        return Promise.reject(err);
       } finally {
         isRefreshing = false;
       }
@@ -84,21 +95,9 @@ Axios.interceptors.response.use(
   }
 );
 
-// Refresh token function
-const refreshAccessToken = async (refreshToken) => {
-  const response = await axios({
-    ...SummaryApi.refreshToken,
-    headers: {
-      Authorization: `Bearer ${refreshToken}`,
-    },
-  });
-  return response.data.data.accessToken;
-};
-
-// Logout handler
-const handleLogout = () => {
-  localStorage.removeItem("accesstoken");
-  localStorage.removeItem("refreshToken");
+// Proper Logout Handler
+const logoutUser = () => {
+  localStorage.clear();
   if (window.location.pathname !== "/login") {
     window.location.href = "/login";
   }

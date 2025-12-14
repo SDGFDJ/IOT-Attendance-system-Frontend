@@ -1,5 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
+
+// Public Pages
 import Home from "../pages/Home";
 import SearchPage from "../pages/SearchPage";
 import Login from "../pages/Login";
@@ -15,7 +17,18 @@ import Profile from "../pages/Profile";
 import MyOrders from "../pages/MyOrders";
 import Address from "../pages/Address";
 
-// Admin Pages
+// Smart Attendance Pages
+import StudentsPage from "../pages/StudentsPage";
+import AddStudent from "../pages/AddStudent";
+import StudentProfilePage from "../pages/StudentProfilePage";
+import StudentAttendanceCalendar from "../pages/StudentAttendanceCalendar";
+import AttendanceDayDetails from "../pages/AttendanceDayDetails";
+import ScanAttendancePage from "../pages/ScanAttendancePage";
+
+
+
+
+// Admin Pages (E-Commerce Safe)
 import AdminAllOrders from "../pages/AdminAllOrders";
 import CategoryPage from "../pages/CategoryPage";
 import SubCategoryPage from "../pages/SubCategoryPage";
@@ -35,7 +48,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      // Public Routes
+      // 👉 PUBLIC ROUTES
       { path: "", element: <Home /> },
       { path: "search", element: <SearchPage /> },
       { path: "login", element: <Login /> },
@@ -45,7 +58,7 @@ const router = createBrowserRouter([
       { path: "reset-password", element: <ResetPassword /> },
       { path: "user", element: <UserMenuMobile /> },
 
-      // User Dashboard
+      // 👉 USER DASHBOARD (Protected UI)
       {
         path: "dashboard",
         element: <Dashboard />,
@@ -54,25 +67,39 @@ const router = createBrowserRouter([
           { path: "myorders", element: <MyOrders /> },
           { path: "address", element: <Address /> },
 
-          // Admin-only routes
-          { path: "AdminAllOrders", element: <AdminAllOrders /> },
+          // ⭐ SMART ATTENDANCE SYSTEM
+          { path: "students", element: <StudentsPage /> },
+          { path: "add-student", element: <AddStudent /> },
+          { path: "student/:id", element: <StudentProfilePage /> },
+          { path: "/dashboard/student/:id/attendance",element:<StudentAttendanceCalendar />},
+          { path:"/dashboard/attendance/details/:id"
+ , element:<AttendanceDayDetails />},
+ {
+  path: "/dashboard/scan-attendance",
+  element: <ScanAttendancePage />
+},
+
+          // 🛒 ADMIN (Existing E-Commerce Modules)
+          { path: "orders", element: <AdminAllOrders /> },
           { path: "category", element: <CategoryPage /> },
           { path: "subcategory", element: <SubCategoryPage /> },
           { path: "upload-product", element: <UploadProduct /> },
           { path: "product", element: <ProductAdmin /> },
-        ]
+        ],
       },
 
-      // Dynamic category/subcategory route (should be LAST)
+      // 👉 Dynamic Product Routes (SAFE ORDER)
+      { path: "product/:product", element: <ProductDisplayPage /> },
+
+      // 👉 Category/Subcategory Browsing
       {
         path: ":category",
         children: [
           { path: ":subCategory", element: <ProductListPage /> }
-        ]
+        ],
       },
 
-      // Other routes
-      { path: "product/:product", element: <ProductDisplayPage /> },
+      // 👉 Checkout Routes
       { path: "cart", element: <CartMobile /> },
       { path: "checkout", element: <CheckoutPage /> },
       { path: "success", element: <Success /> },

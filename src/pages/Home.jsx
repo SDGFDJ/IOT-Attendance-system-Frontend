@@ -1,125 +1,121 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import { valideURLConvert } from "../utils/valideURLConvert";
 import { useNavigate } from "react-router-dom";
-import CategoryWiseProductDisplay from "../components/CategoryWiseProductDisplay";
 import { motion } from "framer-motion";
+import { GraduationCap, Wifi, BarChart3 } from "lucide-react";
 
 const Home = () => {
-  const loadingCategory = useSelector((state) => state.product.loadingCategory);
-  const categoryData = useSelector((state) => state.product.allCategory);
-  const subCategoryData = useSelector((state) => state.product.allSubCategory);
   const navigate = useNavigate();
 
-  const handleRedirectProductListpage = (id, cat) => {
-    const subcategory = subCategoryData.find((sub) => {
-      return sub.category.some((c) => c._id === id);
-    });
-    const url = `/${valideURLConvert(cat)}-${id}/${valideURLConvert(
-      subcategory.name
-    )}-${subcategory._id}`;
-    navigate(url);
-  };
-
-  const scrollToProducts = () => {
-    document
-      .getElementById("products-section")
-      .scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
-    <section className="bg-white">
-      {/* HERO SECTION */}
-      <div className="relative w-full h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-r from-green-200 via-white to-green-100">
-        {/* Animated Floating Circles */}
-        <motion.div
-          animate={{ x: [0, 30, 0], y: [0, 20, 0], rotate: [0, 360, 0] }}
-          transition={{ repeat: Infinity, duration: 12 }}
-          className="absolute w-48 h-48 bg-green-300 rounded-full opacity-30 -top-20 -left-10"
-        />
-        <motion.div
-          animate={{ x: [0, -40, 0], y: [0, -30, 0], rotate: [0, -360, 0] }}
-          transition={{ repeat: Infinity, duration: 15 }}
-          className="absolute w-72 h-72 bg-yellow-200 rounded-full opacity-20 bottom-0 right-0"
-        />
+    <section className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      
+      {/* ================= HERO SECTION ================= */}
+      <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-500 via-green-400 to-teal-300">
+        <div className="absolute inset-0 bg-black/20"></div>
 
-        {/* Hero Text */}
         <motion.div
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1.5 }}
-          className="relative z-10 text-center px-4 md:px-0"
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9 }}
+          className="relative z-10 text-center px-6 max-w-5xl"
         >
-          <h1 className="text-5xl md:text-7xl font-extrabold text-green-800 drop-shadow-lg animate-fade-in">
-            Ma Gayatri Store
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 drop-shadow-xl">
+            IoT Attendance System
           </h1>
-          <p className="text-lg md:text-2xl mt-4 text-gray-700 animate-fade-in delay-200">
-            Fresh groceries at your doorstep – Healthy, Fast & Affordable
+
+          <p className="text-xl md:text-2xl text-white/95 mb-10 leading-relaxed">
+            Smart • Secure • Automated attendance management using  
+            <span className="font-semibold"> IoT & Cloud Technology</span>
           </p>
+
           <motion.button
-            onClick={scrollToProducts}
-            whileHover={{
-              scale: 1.1,
-              boxShadow: "0px 0px 25px rgba(34,197,94,0.5)",
-            }}
+            onClick={() => navigate("/dashboard/students")}
+            whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.95 }}
-            className="mt-6 px-8 py-4 bg-green-600 text-white rounded-full shadow-lg transition-all duration-300 hover:bg-green-700"
+            className="px-12 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 
+                       text-white rounded-xl shadow-xl font-semibold text-lg"
           >
-            Shop Now
+            Start Now
           </motion.button>
         </motion.div>
       </div>
 
-      {/* CATEGORIES GRID */}
-      <div
-        id="products-section"
-        className="container mx-auto px-4 md:px-6 my-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-6"
-      >
-        {loadingCategory
-          ? new Array(10).fill(null).map((_, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg p-4 h-36 grid gap-2 shadow-lg animate-pulse"
-              >
-                <div className="bg-green-100 h-24 rounded-lg"></div>
-                <div className="bg-green-100 h-6 rounded"></div>
-              </div>
-            ))
-          : categoryData.map((cat) => (
-              <motion.div
-                key={cat._id}
-                onClick={() =>
-                  handleRedirectProductListpage(cat._id, cat.name)
-                }
-                whileHover={{
-                  scale: 1.1,
-                  boxShadow: "0px 15px 30px rgba(34,197,94,0.2)",
-                }}
-                whileTap={{ scale: 0.97 }}
-                className="cursor-pointer bg-white rounded-xl p-4 flex flex-col items-center transition-all duration-300 hover:bg-green-50"
-              >
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  className="w-20 h-20 object-contain mb-2"
-                />
-                <p className="text-sm font-semibold text-gray-700">{cat.name}</p>
-              </motion.div>
-            ))}
+      {/* ================= FEATURES SECTION ================= */}
+      <div className="container mx-auto px-6 py-20">
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-4xl font-bold text-center text-gray-900 mb-14"
+        >
+          Why Choose Our System?
+        </motion.h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          
+          {/* Feature 1 */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="bg-white rounded-2xl p-8 shadow-lg border"
+          >
+            <GraduationCap size={50} className="text-emerald-600 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">
+              Student Management
+            </h3>
+            <p className="text-gray-600">
+              Add, update and manage students with complete profile & photo.
+            </p>
+          </motion.div>
+
+          {/* Feature 2 */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="bg-white rounded-2xl p-8 shadow-lg border"
+          >
+            <Wifi size={50} className="text-blue-600 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">
+              IoT Based Attendance
+            </h3>
+            <p className="text-gray-600">
+              RFID / ESP32 based real-time attendance with high accuracy.
+            </p>
+          </motion.div>
+
+          {/* Feature 3 */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="bg-white rounded-2xl p-8 shadow-lg border"
+          >
+            <BarChart3 size={50} className="text-purple-600 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">
+              Reports & Analytics
+            </h3>
+            <p className="text-gray-600">
+              Daily, monthly & student-wise attendance reports instantly.
+            </p>
+          </motion.div>
+
+        </div>
       </div>
 
-      {/* CATEGORY-WISE PRODUCTS */}
-      {categoryData?.map((c) => (
-        <motion.div
-          key={c?._id + "CategorywiseProduct"}
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8 }}
+      {/* ================= FOOTER CTA ================= */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-500 py-16 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          Ready to digitize your attendance?
+        </h2>
+
+        <motion.button
+          onClick={() => navigate("/dashboard/students")}
+          whileHover={{ scale: 1.06 }}
+          whileTap={{ scale: 0.95 }}
+          className="px-10 py-4 bg-white text-emerald-700 
+                     rounded-xl font-semibold text-lg shadow-lg"
         >
-          <CategoryWiseProductDisplay id={c?._id} name={c?.name} />
-        </motion.div>
-      ))}
+          Go to Dashboard
+        </motion.button>
+      </div>
+
     </section>
   );
 };
