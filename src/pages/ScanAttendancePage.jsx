@@ -11,20 +11,20 @@ export default function AttendanceScanner() {
   const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
-    let isMounted = true;
+    let active = true;
 
     const startScanner = async () => {
       try {
-        const codeReader = new BrowserQRCodeReader();
-        codeReaderRef.current = codeReader;
+        const reader = new BrowserQRCodeReader();
+        codeReaderRef.current = reader;
 
-        await codeReader.decodeFromConstraints(
+        await reader.decodeFromConstraints(
           {
-            video: { facingMode: { ideal: "environment" } }, // mobile back / desktop auto
+            video: { facingMode: { ideal: "environment" } },
           },
           videoRef.current,
           async (result) => {
-            if (!result || !scanning || !isMounted) return;
+            if (!active || !result || !scanning) return;
 
             const studentId = result.text?.trim();
             if (!studentId) return;
@@ -33,46 +33,44 @@ export default function AttendanceScanner() {
 
             try {
               const res = await Axios({
-                ...SummaryApi.markAttendance,
+                ...SummaryApi.scanAttendance, // ✅ FIXED
                 data: { studentId },
               });
 
-              // ✅ IMPORTANT FIX
               if (res.data?.success) {
-                setStatus(res.data.message || "Attendance Marked");
+                setStatus(res.data.message || "Attendance Marked ✅");
               } else {
-                setStatus(res.data?.message || "Attendance Failed");
+                setStatus(res.data?.message || "Attendance Failed ❌");
               }
-            } catch (error) {
-              console.error("Attendance API Error:", error.response?.data || error);
+            } catch (err) {
               setStatus(
-                error.response?.data?.message || "Attendance Failed"
+                err.response?.data?.message || "Server Error ❌"
               );
             }
 
             setTimeout(() => {
-              if (isMounted) {
+              if (active) {
                 setStatus("");
                 setScanning(true);
               }
-            }, 3000);
+            }, 2500);
           }
         );
-      } catch (error) {
-        console.error("Camera Error:", error);
-        setStatus("Camera permission denied");
+      } catch (err) {
+        console.error("Camera Error:", err);
+        setStatus("Camera permission denied ❌");
       }
     };
 
     startScanner();
 
     return () => {
-      isMounted = false;
+      active = false;
       try {
-        codeReaderRef.current?.stopContinuousDecode();
-      } catch (e) {}
+        codeReaderRef.current?.reset();
+      } catch {}
     };
-  }, []);
+  }, [scanning]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
@@ -88,9 +86,7 @@ export default function AttendanceScanner() {
       {status && (
         <p
           className={`mt-4 text-lg font-semibold ${
-            status.toLowerCase().includes("fail")
-              ? "text-red-600"
-              : "text-green-600"
+            status.includes("❌") ? "text-red-600" : "text-green-600"
           }`}
         >
           {status}

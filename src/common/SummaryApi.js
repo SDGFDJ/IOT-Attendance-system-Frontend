@@ -46,7 +46,7 @@ const SummaryApi = {
   getAllAttendance: { url: "/api/attendance/list", method: "get" },
   getTodaySummary: { url: "/api/attendance/today-summary", method: "get" },
   getStudentAttendanceDay: { url: "/api/attendance/day", method: "get" },
-  markAttendance: { url: "/api/attendance/mark", method: "post" },
+scanAttendance: { url: "/api/attendance/scan", method: "post" },
 
   // ---------------- ECOMMERCE -------------------
   addCategory: { url: "/api/category/add-category", method: "post" },

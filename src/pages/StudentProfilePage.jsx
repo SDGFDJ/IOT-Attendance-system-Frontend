@@ -41,7 +41,7 @@ export default function StudentProfile() {
     );
   }
 
-  const qrData = `ID:${student.studentId}|Name:${student.name}|Class:${student.className}`;
+  const qrData = `${student.studentId}`;
   const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
     qrData
   )}`;
