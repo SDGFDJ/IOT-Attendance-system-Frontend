@@ -7,124 +7,98 @@ export default function AttendanceScanner() {
   const videoRef = useRef(null);
   const codeReaderRef = useRef(null);
 
-  const [cameras, setCameras] = useState([]);
-  const [selectedCamera, setSelectedCamera] = useState("");
   const [status, setStatus] = useState("");
-  const [scanning, setScanning] = useState(false);
+  const [scanning, setScanning] = useState(true);
 
-  // 🔹 Get all cameras (mobile + usb + laptop)
   useEffect(() => {
-    const getCameras = async () => {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(
-        (device) => device.kind === "videoinput"
-      );
+    let isMounted = true;
 
-      setCameras(videoDevices);
+    const startScanner = async () => {
+      try {
+        const codeReader = new BrowserQRCodeReader();
+        codeReaderRef.current = codeReader;
 
-      // Auto select back camera if exists
-      const backCam = videoDevices.find((d) =>
-        d.label.toLowerCase().includes("back")
-      );
+        await codeReader.decodeFromConstraints(
+          {
+            video: { facingMode: { ideal: "environment" } }, // mobile back / desktop auto
+          },
+          videoRef.current,
+          async (result) => {
+            if (!result || !scanning || !isMounted) return;
 
-      setSelectedCamera(backCam?.deviceId || videoDevices[0]?.deviceId);
+            const studentId = result.text?.trim();
+            if (!studentId) return;
+
+            setScanning(false);
+
+            try {
+              const res = await Axios({
+                ...SummaryApi.markAttendance,
+                data: { studentId },
+              });
+
+              // ✅ IMPORTANT FIX
+              if (res.data?.success) {
+                setStatus(res.data.message || "Attendance Marked");
+              } else {
+                setStatus(res.data?.message || "Attendance Failed");
+              }
+            } catch (error) {
+              console.error("Attendance API Error:", error.response?.data || error);
+              setStatus(
+                error.response?.data?.message || "Attendance Failed"
+              );
+            }
+
+            setTimeout(() => {
+              if (isMounted) {
+                setStatus("");
+                setScanning(true);
+              }
+            }, 3000);
+          }
+        );
+      } catch (error) {
+        console.error("Camera Error:", error);
+        setStatus("Camera permission denied");
+      }
     };
 
-    getCameras();
-  }, []);
-
-  // 🔹 Start scanner with selected camera
-  const startScanner = async (deviceId) => {
-    try {
-      setScanning(true);
-      setStatus("");
-
-      if (codeReaderRef.current) {
-        codeReaderRef.current.stopContinuousDecode();
-      }
-
-      const reader = new BrowserQRCodeReader();
-      codeReaderRef.current = reader;
-
-      await reader.decodeFromVideoDevice(
-        deviceId,
-        videoRef.current,
-        async (result) => {
-          if (!result) return;
-
-          setScanning(false);
-          const studentId = result.text.trim();
-
-          try {
-            const res = await Axios({
-              ...SummaryApi.markAttendance,
-              data: { studentId },
-            });
-
-            setStatus(res.data.message || "Attendance Marked");
-          } catch (error) {
-            setStatus("Attendance Failed");
-          }
-
-          setTimeout(() => {
-            setStatus("");
-            setScanning(true);
-          }, 3000);
-        }
-      );
-    } catch (err) {
-      console.error(err);
-      setStatus("Camera error or permission denied");
-    }
-  };
-
-  // 🔁 Restart scanner when camera changes
-  useEffect(() => {
-    if (selectedCamera) {
-      startScanner(selectedCamera);
-    }
+    startScanner();
 
     return () => {
-      codeReaderRef.current?.stopContinuousDecode();
+      isMounted = false;
+      try {
+        codeReaderRef.current?.stopContinuousDecode();
+      } catch (e) {}
     };
-  }, [selectedCamera]);
+  }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold mb-3">
-        QR Attendance Scanner
-      </h1>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+      <h1 className="text-2xl font-bold mb-4">Scan QR for Attendance</h1>
 
-      {/* 🎥 Camera Selector */}
-      <select
-        value={selectedCamera}
-        onChange={(e) => setSelectedCamera(e.target.value)}
-        className="mb-3 p-2 border rounded w-full max-w-sm"
-      >
-        {cameras.map((cam, index) => (
-          <option key={cam.deviceId} value={cam.deviceId}>
-            {cam.label || `Camera ${index + 1}`}
-          </option>
-        ))}
-      </select>
-
-      {/* 📷 Camera View */}
       <video
         ref={videoRef}
-        className="w-full max-w-sm rounded-lg border shadow"
+        className="w-full max-w-sm rounded-lg border shadow-lg"
         muted
         playsInline
       />
 
-      {/* 📢 Status */}
       {status && (
-        <p className="mt-4 text-lg font-semibold text-green-600">
+        <p
+          className={`mt-4 text-lg font-semibold ${
+            status.toLowerCase().includes("fail")
+              ? "text-red-600"
+              : "text-green-600"
+          }`}
+        >
           {status}
         </p>
       )}
 
-      <p className="mt-2 text-sm text-gray-500 text-center">
-        You can switch camera anytime (Front / Back / USB)
+      <p className="mt-3 text-sm text-gray-500 text-center">
+        Allow camera permission when asked
       </p>
     </div>
   );
