@@ -5,18 +5,18 @@ import SummaryApi from "../common/SummaryApi";
 
 export default function AttendanceScanner() {
   const videoRef = useRef(null);
-  const codeReaderRef = useRef(null);
+  const readerRef = useRef(null);
+  const lastScannedRef = useRef(null);
 
   const [status, setStatus] = useState("");
-  const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
-    let active = true;
+    let isActive = true;
 
     const startScanner = async () => {
       try {
         const reader = new BrowserQRCodeReader();
-        codeReaderRef.current = reader;
+        readerRef.current = reader;
 
         await reader.decodeFromConstraints(
           {
@@ -24,16 +24,18 @@ export default function AttendanceScanner() {
           },
           videoRef.current,
           async (result) => {
-            if (!active || !result || !scanning) return;
+            if (!isActive || !result) return;
 
             const studentId = result.text?.trim();
             if (!studentId) return;
 
-            setScanning(false);
+            // 🚫 Prevent duplicate scan of same QR
+            if (lastScannedRef.current === studentId) return;
+            lastScannedRef.current = studentId;
 
             try {
               const res = await Axios({
-                ...SummaryApi.scanAttendance, // ✅ FIXED
+                ...SummaryApi.scanAttendance,
                 data: { studentId },
               });
 
@@ -48,12 +50,11 @@ export default function AttendanceScanner() {
               );
             }
 
+            // 🔁 Allow re-scan after 2 sec
             setTimeout(() => {
-              if (active) {
-                setStatus("");
-                setScanning(true);
-              }
-            }, 2500);
+              lastScannedRef.current = null;
+              setStatus("");
+            }, 2000);
           }
         );
       } catch (err) {
@@ -65,16 +66,18 @@ export default function AttendanceScanner() {
     startScanner();
 
     return () => {
-      active = false;
+      isActive = false;
       try {
-        codeReaderRef.current?.reset();
+        readerRef.current?.reset();
       } catch {}
     };
-  }, [scanning]);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold mb-4">Scan QR for Attendance</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        Continuous QR Attendance Scan
+      </h1>
 
       <video
         ref={videoRef}
@@ -94,7 +97,7 @@ export default function AttendanceScanner() {
       )}
 
       <p className="mt-3 text-sm text-gray-500 text-center">
-        Allow camera permission when asked
+      Scanner is running continuously — no refresh needed
       </p>
     </div>
   );
