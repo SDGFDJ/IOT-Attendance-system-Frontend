@@ -1,4 +1,4 @@
-// .env से baseURL लाना
+// base URL from .env
 export const baseURL = import.meta.env.VITE_API_URL;
 
 const SummaryApi = {
@@ -19,7 +19,6 @@ const SummaryApi = {
   addStudent: { url: "/api/user/students", method: "post" },
   getStudents: { url: "/api/user/students", method: "get" },
 
-  // 👇 🟦:id required in URL
   getStudentById: (id) => ({
     url: `/api/user/students/${id}`,
     method: "get",
@@ -30,16 +29,16 @@ const SummaryApi = {
     method: "put",
   }),
 
-deleteStudent: (id) => ({
-  url: `/api/user/students/${id}`,
-  method: "delete",
-}),
-getStudentAttendanceMonth: {
-  url: "/api/attendance/by-month/:id",
-  method: "get",
-},
+  deleteStudent: (id) => ({
+    url: `/api/user/students/${id}`,
+    method: "delete",
+  }),
 
-
+  // ✅ FIXED
+  getStudentAttendanceMonth: (id, month, year) => ({
+    url: `/api/attendance/by-month/${id}?month=${month}&year=${year}`,
+    method: "get",
+  }),
 
   // ---------------- ATTENDANCE SYSTEM -------------------
   scanAttendance: { url: "/api/attendance/scan", method: "post" },
@@ -47,57 +46,43 @@ getStudentAttendanceMonth: {
   getAllAttendance: { url: "/api/attendance/list", method: "get" },
   getTodaySummary: { url: "/api/attendance/today-summary", method: "get" },
   getStudentAttendanceDay: { url: "/api/attendance/day", method: "get" },
-  markAttendance: {
-  url: "/api/attendance/mark",
-  method: "post"
-},
+  markAttendance: { url: "/api/attendance/mark", method: "post" },
 
-
-
-  // ---------------- ECOMMERCE Module (Existing) -------------------
-  
-  // Category
+  // ---------------- ECOMMERCE -------------------
   addCategory: { url: "/api/category/add-category", method: "post" },
   getCategory: { url: "/api/category/get", method: "get" },
   updateCategory: { url: "/api/category/update", method: "put" },
   deleteCategory: { url: "/api/category/delete", method: "delete" },
 
-  // Subcategory
   createSubCategory: { url: "/api/subcategory/create", method: "post" },
   getSubCategory: { url: "/api/subcategory/get", method: "post" },
   updateSubCategory: { url: "/api/subcategory/update", method: "put" },
   deleteSubCategory: { url: "/api/subcategory/delete", method: "delete" },
 
-  // Product
   createProduct: { url: "/api/product/create", method: "post" },
   getProduct: { url: "/api/product/get", method: "post" },
   updateProductDetails: { url: "/api/product/update-product-details", method: "put" },
   deleteProduct: { url: "/api/product/delete-product", method: "delete" },
   searchProduct: { url: "/api/product/search-product", method: "post" },
 
-  // Cart
   addTocart: { url: "/api/cart/create", method: "post" },
   getCartItem: { url: "/api/cart/get", method: "get" },
   updateCartItemQty: { url: "/api/cart/update-qty", method: "put" },
   deleteCartItem: { url: "/api/cart/delete-cart-item", method: "delete" },
 
-  // Address
   createAddress: { url: "/api/address/create", method: "post" },
   getAddress: { url: "/api/address/get", method: "get" },
   updateAddress: { url: "/api/address/update", method: "put" },
   disableAddress: { url: "/api/address/disable", method: "delete" },
 
-  // Orders
   CashOnDeliveryOrder: { url: "/api/order/cash-on-delivery", method: "post" },
   payment_url: { url: "/api/order/checkout", method: "post" },
   cancelOrder: { url: "/api/order/cancel", method: "post" },
   getOrderItems: { url: "/api/order/order-list", method: "get" },
 
-  // Admin Orders
   getAllOrders: { url: "/api/order/admin/orders", method: "get" },
   updateOrderStatus: { url: "/api/order/admin/update-status", method: "post" },
 
-  // File Upload
   uploadImage: { url: "/api/file/upload", method: "post" },
 };
 

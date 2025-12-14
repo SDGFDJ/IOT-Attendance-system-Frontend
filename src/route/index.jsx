@@ -11,7 +11,7 @@ import OtpVerification from "../pages/OtpVerification";
 import ResetPassword from "../pages/ResetPassword";
 import UserMenuMobile from "../pages/UserMenuMobile";
 
-// User Dashboard Pages
+// Dashboard Layout
 import Dashboard from "../layouts/Dashboard";
 import Profile from "../pages/Profile";
 import MyOrders from "../pages/MyOrders";
@@ -25,10 +25,7 @@ import StudentAttendanceCalendar from "../pages/StudentAttendanceCalendar";
 import AttendanceDayDetails from "../pages/AttendanceDayDetails";
 import ScanAttendancePage from "../pages/ScanAttendancePage";
 
-
-
-
-// Admin Pages (E-Commerce Safe)
+// Admin Pages
 import AdminAllOrders from "../pages/AdminAllOrders";
 import CategoryPage from "../pages/CategoryPage";
 import SubCategoryPage from "../pages/SubCategoryPage";
@@ -48,8 +45,9 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      // 👉 PUBLIC ROUTES
-      { path: "", element: <Home /> },
+
+      // 🔓 PUBLIC ROUTES
+      { index: true, element: <Home /> },
       { path: "search", element: <SearchPage /> },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
@@ -58,7 +56,7 @@ const router = createBrowserRouter([
       { path: "reset-password", element: <ResetPassword /> },
       { path: "user", element: <UserMenuMobile /> },
 
-      // 👉 USER DASHBOARD (Protected UI)
+      // 🔐 DASHBOARD
       {
         path: "dashboard",
         element: <Dashboard />,
@@ -67,19 +65,15 @@ const router = createBrowserRouter([
           { path: "myorders", element: <MyOrders /> },
           { path: "address", element: <Address /> },
 
-          // ⭐ SMART ATTENDANCE SYSTEM
+          // ✅ SMART ATTENDANCE
           { path: "students", element: <StudentsPage /> },
           { path: "add-student", element: <AddStudent /> },
           { path: "student/:id", element: <StudentProfilePage /> },
-          { path: "/dashboard/student/:id/attendance",element:<StudentAttendanceCalendar />},
-          { path:"/dashboard/attendance/details/:id"
- , element:<AttendanceDayDetails />},
- {
-  path: "/dashboard/scan-attendance",
-  element: <ScanAttendancePage />
-},
+          { path: "student/:id/attendance", element: <StudentAttendanceCalendar /> },
+          { path: "attendance/details/:id", element: <AttendanceDayDetails /> },
+{ path: "attendance-scan", element: <ScanAttendancePage /> },
 
-          // 🛒 ADMIN (Existing E-Commerce Modules)
+          // 🛒 ADMIN
           { path: "orders", element: <AdminAllOrders /> },
           { path: "category", element: <CategoryPage /> },
           { path: "subcategory", element: <SubCategoryPage /> },
@@ -88,24 +82,22 @@ const router = createBrowserRouter([
         ],
       },
 
-      // 👉 Dynamic Product Routes (SAFE ORDER)
+      // 🧾 PRODUCT DISPLAY
       { path: "product/:product", element: <ProductDisplayPage /> },
 
-      // 👉 Category/Subcategory Browsing
+      // 🛍️ CATEGORY BROWSING (KEEP LAST)
       {
-        path: ":category",
-        children: [
-          { path: ":subCategory", element: <ProductListPage /> }
-        ],
+        path: ":category/:subCategory",
+        element: <ProductListPage />,
       },
 
-      // 👉 Checkout Routes
+      // 💳 CHECKOUT
       { path: "cart", element: <CartMobile /> },
       { path: "checkout", element: <CheckoutPage /> },
       { path: "success", element: <Success /> },
       { path: "cancel", element: <Cancel /> },
-    ]
-  }
+    ],
+  },
 ]);
 
 export default router;

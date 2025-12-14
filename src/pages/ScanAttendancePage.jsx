@@ -6,28 +6,28 @@ import SummaryApi from "../common/SummaryApi";
 export default function AttendanceScanner() {
   const videoRef = useRef(null);
   const codeReaderRef = useRef(null);
+
   const [status, setStatus] = useState("");
   const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const startScanner = async () => {
       try {
         const codeReader = new BrowserQRCodeReader();
         codeReaderRef.current = codeReader;
 
-        // 🔥 Auto open BACK camera
         await codeReader.decodeFromConstraints(
           {
-            video: {
-              facingMode: { ideal: "environment" }, // back camera
-            },
+            video: { facingMode: "environment" }, // back camera
           },
           videoRef.current,
-          async (result, err) => {
-            if (!result || !scanning) return;
+          async (result) => {
+            if (!result || !scanning || !isMounted) return;
 
             const studentId = result.text.trim();
-            setScanning(false); // prevent double scan
+            setScanning(false);
 
             try {
               const res = await Axios({
@@ -35,35 +35,40 @@ export default function AttendanceScanner() {
                 data: { studentId },
               });
 
-              setStatus(res.data.message || "Attendance Marked ✅");
+              setStatus(res.data.message || "Attendance Marked");
             } catch (error) {
-              setStatus("❌ Attendance Failed");
-              console.error(error);
+              setStatus("Attendance Failed");
             }
 
-            // 🔁 Resume scanning after 3 sec
             setTimeout(() => {
-              setStatus("");
-              setScanning(true);
+              if (isMounted) {
+                setStatus("");
+                setScanning(true);
+              }
             }, 3000);
           }
         );
       } catch (error) {
         console.error("Camera Error:", error);
-        setStatus("Camera permission denied ❌");
+        setStatus("Camera permission denied");
       }
     };
 
     startScanner();
 
     return () => {
-      codeReaderRef.current?.reset();
+      isMounted = false;
+      try {
+        codeReaderRef.current?.stopContinuousDecode();
+      } catch (e) {
+        // scanner already stopped
+      }
     };
-  }, [scanning]);
+  }, []); // ✅ scanning removed from dependency
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold mb-4">📷 Scan QR for Attendance</h1>
+      <h1 className="text-2xl font-bold mb-4">Scan QR for Attendance</h1>
 
       <video
         ref={videoRef}
@@ -79,7 +84,7 @@ export default function AttendanceScanner() {
       )}
 
       <p className="mt-3 text-sm text-gray-500">
-        Camera will scan automatically
+        Allow camera permission when asked
       </p>
     </div>
   );

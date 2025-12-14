@@ -40,15 +40,18 @@ const ProductListPage = () => {
         },
       });
 
-      const { data: responseData } = response;
-      if (responseData.success) {
-        if (responseData.page === 1) {
-          setData(responseData.data);
-        } else {
-          setData(prev => [...prev, ...responseData.data]);
-        }
-        setTotalPage(responseData.totalCount);
-      }
+if (responseData.success) {
+  const products = responseData?.data?.products || [];
+
+  if (page === 1) {
+    setData(products);
+  } else {
+    setData(prev => [...prev, ...products]);
+  }
+
+  setTotalPage(responseData?.data?.totalPage || 1);
+}
+
     } catch (error) {
       AxiosToastError(error);
     } finally {
