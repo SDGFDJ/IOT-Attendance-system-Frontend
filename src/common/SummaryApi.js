@@ -34,30 +34,27 @@ const SummaryApi = {
     method: "delete",
   }),
 
-  // ✅ FIXED
-  getStudentAttendanceMonth: (id, month, year) => ({
-    url: `/api/attendance/by-month/${id}?month=${month}&year=${year}`,
-    method: "get",
-  }),
-
   // ---------------- ATTENDANCE SYSTEM -------------------
 
-markAttendance: {
-  url: "/api/attendance/scan",
-  method: "post",
-},
+  // 📌 QR Scan
+  markAttendance: {
+    url: "/api/attendance/scan",
+    method: "post",
+  },
 
-getStudentAttendanceMonth: (id, month, year) => ({
-  url: `/api/attendance/by-month/${id}`,
-  method: "get",
-  params: { month, year },
-}),
+  // 📅 Monthly attendance (Calendar)
+  getStudentAttendanceMonth: (studentId, month, year) => ({
+    url: `/api/attendance/by-month/${studentId}`,
+    method: "get",
+    params: { month, year },
+  }),
 
-getStudentAttendanceDay: (id, day, month, year) => ({
-  url: `/api/attendance/by-day/${id}`,
-  method: "get",
-  params: { day, month, year },
-}),
+  // 📆 Day wise lecture attendance
+  getStudentAttendanceDay: (studentId, day, month, year) => ({
+    url: `/api/attendance/by-day/${studentId}`,
+    method: "get",
+    params: { day, month, year },
+  }),
 
   // ---------------- ECOMMERCE -------------------
   addCategory: { url: "/api/category/add-category", method: "post" },
@@ -73,7 +70,7 @@ getStudentAttendanceDay: (id, day, month, year) => ({
   createProduct: { url: "/api/product/create", method: "post" },
   getProduct: { url: "/api/product/get", method: "post" },
   updateProductDetails: { url: "/api/product/update-product-details", method: "put" },
-  deleteProduct: { url: "/api/product/delete-product", method: "delete" },
+  deleteProduct: { url: "/api/product/delete", method: "delete" },
   searchProduct: { url: "/api/product/search-product", method: "post" },
 
   addTocart: { url: "/api/cart/create", method: "post" },
