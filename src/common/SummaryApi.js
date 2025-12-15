@@ -41,12 +41,23 @@ const SummaryApi = {
   }),
 
   // ---------------- ATTENDANCE SYSTEM -------------------
-  scanAttendance: { url: "/api/attendance/scan", method: "post" },
-  getStudentAttendance: { url: "/api/attendance/get-by-student", method: "post" },
-  getAllAttendance: { url: "/api/attendance/list", method: "get" },
-  getTodaySummary: { url: "/api/attendance/today-summary", method: "get" },
-  getStudentAttendanceDay: { url: "/api/attendance/day", method: "get" },
-scanAttendance: { url: "/api/attendance/scan", method: "post" },
+
+markAttendance: {
+  url: "/api/attendance/scan",
+  method: "post",
+},
+
+getStudentAttendanceMonth: (id, month, year) => ({
+  url: `/api/attendance/by-month/${id}`,
+  method: "get",
+  params: { month, year },
+}),
+
+getStudentAttendanceDay: (id, day, month, year) => ({
+  url: `/api/attendance/by-day/${id}`,
+  method: "get",
+  params: { day, month, year },
+}),
 
   // ---------------- ECOMMERCE -------------------
   addCategory: { url: "/api/category/add-category", method: "post" },
