@@ -7,23 +7,22 @@ import { QrCode } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function AddStudent() {
-
   const navigate = useNavigate();
 
-const [data, setData] = useState({
-  name: "",
-  roll: "",
-  className: "",  // <- updated
-  division: "",
-  fatherName: "",
-  mobile: "",
-  address: "",
-});
+  const [data, setData] = useState({
+    name: "",
+    roll: "",
+    className: "",
+    division: "",
+    fatherName: "",
+    mobile: "",
+    address: "",
+  });
 
   const [photo, setPhoto] = useState(null);
   const [qrURL, setQrURL] = useState("");
-  const [loading, setLoading] = useState(false);
   const [studentId, setStudentId] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -38,176 +37,143 @@ const [data, setData] = useState({
     setLoading(true);
 
     try {
-      // Backend request
       const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
+      Object.entries(data).forEach(([k, v]) => formData.append(k, v));
       if (photo) formData.append("photo", photo);
 
-      const response = await Axios({
+      const res = await Axios({
         ...SummaryApi.addStudent,
         data: formData,
       });
 
-      if (response.data.success) {
-        const id = response.data.data.studentId;
+      if (res.data?.success) {
+        const id = res.data.data.studentId;
         setStudentId(id);
 
         const qrData = `ID:${id}|Name:${data.name}|Roll:${data.roll}`;
-        const qrAPI = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+        setQrURL(
+          `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
+            qrData
+          )}`
+        );
 
-        setQrURL(qrAPI);
-        toast.success("Student Added Successfully!");
+        toast.success("Student added successfully");
+        setTimeout(() => navigate("/dashboard/students"), 1200);
 
-        // Navigate to list after few sec
-        setTimeout(() => navigate("/dashboard/students"), 1500);
-
-        // Reset form
         setData({
-        name: "",
-  roll: "",
-  className: "",  // <- updated
-  division: "",
-  fatherName: "",
-  mobile: "",
-  address: "",
+          name: "",
+          roll: "",
+          className: "",
+          division: "",
+          fatherName: "",
+          mobile: "",
+          address: "",
         });
         setPhoto(null);
       }
-
-    } catch (error) {
-      AxiosToastError(error);
+    } catch (err) {
+      AxiosToastError(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-4">
+    <div className="min-h-screen bg-slate-50 flex justify-center p-3 md:p-6">
 
-      <h2 className="text-lg font-semibold mb-4">Add New Student</h2>
+      {/* MAIN CARD */}
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg p-4 md:p-6">
 
-      <form className="my-4 grid gap-4" onSubmit={handleSubmit}>
+        <h2 className="text-lg md:text-xl font-semibold mb-4">
+          Add New Student
+        </h2>
 
-        <div className="grid">
-          <label>Name *</label>
-          <input
-            type="text"
-            name="name"
-            className="p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded"
-            value={data.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="grid">
-          <label>Roll No *</label>
-          <input
-            type="text"
-            name="roll"
-            className="p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded"
-            value={data.roll}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-<label>Class *</label>
-<input
-  type="text"
-  name="className"
-  className="p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded"
-  value={data.className}
-  onChange={handleChange}
-  required
-/>
-
-
-        <div className="grid">
-          <label>Division *</label>
-          <input
-            type="text"
-            name="division"
-            className="p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded"
-            value={data.division}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="grid">
-          <label>Father Name *</label>
-          <input
-            type="text"
-            name="fatherName"
-            className="p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded"
-            value={data.fatherName}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="grid">
-          <label>Mobile *</label>
-          <input
-            type="number"
-            name="mobile"
-            className="p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded"
-            value={data.mobile}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="grid">
-          <label>Address *</label>
-          <textarea
-            name="address"
-            rows="3"
-            className="p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded"
-            value={data.address}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="grid">
-          <label>Upload Photo</label>
-          <input
-            type="file"
-            accept="image/*"
-            className="border p-1 rounded"
-            onChange={handlePhotoUpload}
-          />
-        </div>
-
-        {photo && (
-          <img
-            src={URL.createObjectURL(photo)}
-            alt="preview"
-            className="w-20 h-20 object-cover rounded-md"
-          />
-        )}
-
-        <button
-          disabled={loading}
-          className="border px-4 py-2 font-semibold hover:bg-primary-100 border-primary-100 text-primary-200 rounded"
+        {/* FORM */}
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
-          {loading ? "Saving..." : "Save Student"}
-        </button>
-      </form>
+          <Input label="Name" name="name" value={data.name} onChange={handleChange} />
+          <Input label="Roll No" name="roll" value={data.roll} onChange={handleChange} />
+          <Input label="Class" name="className" value={data.className} onChange={handleChange} />
+          <Input label="Division" name="division" value={data.division} onChange={handleChange} />
+          <Input label="Father Name" name="fatherName" value={data.fatherName} onChange={handleChange} />
+          <Input label="Mobile" name="mobile" value={data.mobile} onChange={handleChange} type="tel" />
 
-      {/* QR Preview */}
-      {qrURL && (
-        <div className="text-center my-4">
-          <QrCode size={42} className="text-primary-200 mx-auto" />
-          <img src={qrURL} className="mx-auto border rounded p-1 mt-2" />
-          <p className="text-sm text-gray-600">{studentId}</p>
-        </div>
-      )}
+          {/* Address full width */}
+          <div className="md:col-span-2">
+            <label className="text-sm font-medium">Address</label>
+            <textarea
+              name="address"
+              rows="3"
+              value={data.address}
+              onChange={handleChange}
+              className="mt-1 w-full p-2 border rounded bg-blue-50 focus:outline-none focus:border-primary-200"
+              required
+            />
+          </div>
 
+          {/* Photo */}
+          <div className="md:col-span-2 flex flex-col sm:flex-row gap-4 items-center">
+            <div>
+              <label className="text-sm font-medium">Upload Photo</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="block mt-1"
+              />
+            </div>
+
+            {photo && (
+              <img
+                src={URL.createObjectURL(photo)}
+                alt="preview"
+                className="w-20 h-20 rounded-lg object-cover border"
+              />
+            )}
+          </div>
+
+          {/* BUTTON */}
+          <div className="md:col-span-2">
+            <button
+              disabled={loading}
+              className="w-full py-2 rounded-xl font-semibold text-white bg-primary-200 hover:bg-primary-300 transition"
+            >
+              {loading ? "Saving..." : "Save Student"}
+            </button>
+          </div>
+        </form>
+
+        {/* QR PREVIEW */}
+        {qrURL && (
+          <div className="mt-6 text-center">
+            <QrCode className="mx-auto text-primary-200" />
+            <img
+              src={qrURL}
+              className="mx-auto mt-2 border rounded p-1"
+            />
+            <p className="text-sm text-gray-600 mt-1">{studentId}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* 🔹 Reusable Input */
+function Input({ label, name, value, onChange, type = "text" }) {
+  return (
+    <div className="flex flex-col">
+      <label className="text-sm font-medium">{label}</label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        required
+        className="mt-1 p-2 border rounded bg-blue-50 focus:outline-none focus:border-primary-200"
+      />
     </div>
   );
 }

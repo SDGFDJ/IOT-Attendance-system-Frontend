@@ -1,82 +1,8 @@
-/* 🔲 Scan corners */
-.corner {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  border-color: #4ade80;
-}
-
-.corner.tl {
-  top: -2px;
-  left: -2px;
-  border-top: 4px solid;
-  border-left: 4px solid;
-}
-.corner.tr {
-  top: -2px;
-  right: -2px;
-  border-top: 4px solid;
-  border-right: 4px solid;
-}
-.corner.bl {
-  bottom: -2px;
-  left: -2px;
-  border-bottom: 4px solid;
-  border-left: 4px solid;
-}
-.corner.br {
-  bottom: -2px;
-  right: -2px;
-  border-bottom: 4px solid;
-  border-right: 4px solid;
-}
-
-/* 🔍 Real scanning animation */
-.scan-line {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    #4ade80,
-    transparent
-  );
-  animation: scanMove 2s linear infinite;
-}
-
-@keyframes scanMove {
-  0% {
-    top: 0%;
-  }
-  50% {
-    top: 95%;
-  }
-  100% {
-    top: 0%;
-  }
-}
-
-
-
-.perspective {
-  perspective: 1200px;
-}
-.preserve-3d {
-  transform-style: preserve-3d;
-}
-.backface-hidden {
-  backface-visibility: hidden;
-}
-.rotate-y-180 {
-  transform: rotateY(180deg);
-}
-  /* ===== FLIP CARD ===== */
 .flip-card {
-  width: 380px;
-  height: 240px;
+  width: 360px;
+  height: 230px;
   perspective: 1200px;
+  cursor: pointer;
 }
 
 .flip-inner {
@@ -87,7 +13,7 @@
   transition: transform 0.8s ease;
 }
 
-.flip-card:hover .flip-inner {
+.flip-card.flipped .flip-inner {
   transform: rotateY(180deg);
 }
 
@@ -96,17 +22,21 @@
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
-  border-radius: 24px;
-  overflow: hidden;
-  background: linear-gradient(135deg, #0f172a, #020617);
-  box-shadow: 0 30px 80px rgba(0,0,0,0.7);
 }
 
 .flip-back {
   transform: rotateY(180deg);
 }
 
-/* ===== DESIGN ===== */
+/* CARD */
+.card {
+  border-radius: 22px;
+  background: linear-gradient(135deg, #020617, #0f172a);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  overflow: hidden;
+  color: white;
+}
+
 .gold-strip {
   position: absolute;
   left: 0;
@@ -117,134 +47,6 @@
 }
 
 .card-content {
-  padding: 16px;
-  color: white;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.college-name {
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: #facc15;
-  font-weight: 600;
-}
-
-.sub-title {
-  font-size: 10px;
-  color: #cbd5f5;
-}
-
-.ay-badge {
-  font-size: 10px;
-  padding: 4px 6px;
-  border-radius: 6px;
-  border: 1px solid rgba(250,204,21,0.4);
-  color: #facc15;
-}
-
-.photo {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
-  object-fit: cover;
-  border: 1px solid rgba(255,255,255,0.2);
-}
-
-.name {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.class {
-  font-size: 11px;
-  color: #cbd5f5;
-}
-
-.qr {
-  width: 64px;
-  height: 64px;
-  background: white;
-  padding: 4px;
-  border-radius: 6px;
-}
-
-.tiny {
-  font-size: 9px;
-  color: #cbd5f5;
-  text-align: right;
-}
-
-.instructions {
-  font-size: 11px;
-  color: #e5e7eb;
-  list-style: disc;
-  padding-left: 16px;
-}
-  .flip-card {
-  width: 360px;
-  height: 230px;
-  perspective: 1200px;
-}
-
-.flip-inner {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.8s ease;
-}
-
-.flip-card:hover .flip-inner,
-.flip-card:active .flip-inner {
-  transform: rotateY(180deg);
-}
-
-.flip-front,
-.flip-back {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-}
-
-.flip-back {
-  transform: rotateY(180deg);
-}
-
-/* ===== CARD STYLE ===== */
-
-.luxury-card {
-  width: 100%;
-  height: 100%;
-  border-radius: 22px;
-  background: linear-gradient(135deg, #0f172a, #020617);
-  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
-  overflow: hidden;
-  color: white;
-  position: relative;
-}
-
-.gold-strip {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 6px;
-  height: 100%;
-  background: linear-gradient(to bottom, #facc15, #f59e0b);
-}
-
-.glass {
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(10px);
-}
-
-.content {
-  position: relative;
-  z-index: 2;
   padding: 14px;
   height: 100%;
   display: flex;
@@ -287,7 +89,7 @@
   border: 1px solid rgba(255,255,255,0.2);
 }
 
-.info .name {
+.name {
   font-size: 14px;
   font-weight: 700;
 }
@@ -329,31 +131,20 @@
   border-radius: 6px;
 }
 
-/* ===== BACK SIDE ===== */
-
-.back-card {
+/* BACK */
+.back {
   background: linear-gradient(135deg, #020617, #020617);
-}
-
-.back-content {
-  position: relative;
-  z-index: 2;
-  padding: 16px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  text-align: center;
 }
 
 .instructions {
   text-align: left;
   font-size: 11px;
+  line-height: 1.4;
   color: #e5e7eb;
-  padding-left: 16px;
 }
 
 .issued {
   font-size: 9px;
   color: #94a3b8;
+  text-align: center;
 }
