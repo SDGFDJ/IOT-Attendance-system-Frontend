@@ -6,98 +6,115 @@ import SummaryApi from "../common/SummaryApi";
 export default function AttendanceScanner() {
   const videoRef = useRef(null);
   const readerRef = useRef(null);
-  const lastScannedRef = useRef(null);
+  const scanningRef = useRef(true);
 
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("Align QR inside the box");
 
+  /* ===============================
+     🔹 STAGE 1: CAMERA + QR DETECT
+  ================================ */
   useEffect(() => {
-    let isActive = true;
+    const reader = new BrowserQRCodeReader(undefined, {
+      delayBetweenScanAttempts: 80, // ⚡ fast but stable
+    });
+    readerRef.current = reader;
 
     const startScanner = async () => {
       try {
-        const reader = new BrowserQRCodeReader();
-        readerRef.current = reader;
-
-        await reader.decodeFromConstraints(
-          {
-            video: { facingMode: { ideal: "environment" } },
-          },
+        await reader.decodeFromVideoDevice(
+          null, // auto-select back camera
           videoRef.current,
-          async (result) => {
-            if (!isActive || !result) return;
+          (result) => {
+            if (!scanningRef.current) return;
 
-            const studentId = result.text?.trim();
-            if (!studentId) return;
-
-            // 🚫 Prevent duplicate scan of same QR
-            if (lastScannedRef.current === studentId) return;
-            lastScannedRef.current = studentId;
-
-            try {
-              const res = await Axios({
-                ...SummaryApi.scanAttendance,
-                data: { studentId },
-              });
-
-              if (res.data?.success) {
-                setStatus(res.data.message || "Attendance Marked ✅");
-              } else {
-                setStatus(res.data?.message || "Attendance Failed ❌");
-              }
-            } catch (err) {
-              setStatus(
-                err.response?.data?.message || "Server Error ❌"
-              );
+            if (result?.text) {
+              scanningRef.current = false; // 🔒 lock scanner
+              handleAttendance(result.text.trim());
             }
-
-            // 🔁 Allow re-scan after 2 sec
-            setTimeout(() => {
-              lastScannedRef.current = null;
-              setStatus("");
-            }, 2000);
           }
         );
       } catch (err) {
-        console.error("Camera Error:", err);
-        setStatus("Camera permission denied ❌");
+        console.error(err);
+        setStatus("Camera error ❌");
       }
     };
 
     startScanner();
 
+    /* ===============================
+       🔹 CLEANUP (VERY IMPORTANT)
+    ================================ */
     return () => {
-      isActive = false;
+      scanningRef.current = false;
       try {
-        readerRef.current?.reset();
+        readerRef.current?.stopContinuousDecode();
       } catch {}
     };
   }, []);
 
+  /* ===============================
+     🔹 STAGE 2: API PROCESSING
+  ================================ */
+  const handleAttendance = async (studentId) => {
+    setStatus("Processing attendance…");
+
+    try {
+      const res = await Axios({
+        ...SummaryApi.markAttendance,
+        data: { studentId },
+      });
+
+      setStatus(
+        res.data?.success
+          ? res.data.message || "Attendance marked ✅"
+          : res.data?.message || "Attendance failed ❌"
+      );
+    } catch {
+      setStatus("Server error ❌");
+    }
+
+    // 🔁 Resume scanning after delay
+    setTimeout(() => {
+      scanningRef.current = true;
+      setStatus("Align QR inside the box");
+    }, 2000);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        Continuous QR Attendance Scan
+    <div className="h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
+
+      {/* HEADER */}
+      <h1 className="text-white mb-2 font-semibold text-lg">
+        QR Attendance Scanner
       </h1>
 
-      <video
-        ref={videoRef}
-        className="w-full max-w-sm rounded-lg border shadow-lg"
-        muted
-        playsInline
-      />
+      {/* CAMERA VIEW */}
+      <div className="relative w-full max-w-sm aspect-[3/4] rounded-xl overflow-hidden shadow-xl">
+        <video
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover"
+          muted
+          playsInline
+        />
 
-      {status && (
-        <p
-          className={`mt-4 text-lg font-semibold ${
-            status.includes("❌") ? "text-red-600" : "text-green-600"
-          }`}
-        >
-          {status}
-        </p>
-      )}
+        {/* DARK OVERLAY */}
+        <div className="absolute inset-0 bg-black/40" />
 
-      <p className="mt-3 text-sm text-gray-500 text-center">
-      Scanner is running continuously — no refresh needed
+        {/* SCAN BOX */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative w-56 h-56 border-2 border-green-400 rounded-xl overflow-hidden">
+            <div className="scan-line" />
+            <span className="corner tl" />
+            <span className="corner tr" />
+            <span className="corner bl" />
+            <span className="corner br" />
+          </div>
+        </div>
+      </div>
+
+      {/* STATUS */}
+      <p className="mt-3 text-sm font-semibold text-green-400">
+        {status}
       </p>
     </div>
   );
