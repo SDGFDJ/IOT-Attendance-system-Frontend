@@ -175,5 +175,5 @@ function Input({ label, name, value, onChange, type = "text" }) {
         className="mt-1 p-2 border rounded bg-blue-50 focus:outline-none focus:border-primary-200"
       />
     </div>
-  );
+  ); 
 }

@@ -4,6 +4,7 @@ import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import AxiosToastError from "../utils/AxiosToastError";
 import { ArrowLeft, Download } from "lucide-react";
+import "./StudentProfile.css"; // ✅ IMPORTANT
 
 export default function StudentProfile() {
   const { id } = useParams();
@@ -43,22 +44,21 @@ export default function StudentProfile() {
         <ArrowLeft size={16} /> Back
       </button>
 
-      {/* ===== FLIP CARD ===== */}
+      {/* ===== ID CARD WRAPPER (VERY IMPORTANT) ===== */}
       <div
-        className={`flip-card ${flipped ? "flipped" : ""}`}
+        className={`idcard flip-card ${flipped ? "flipped" : ""}`}
         onClick={() => setFlipped(!flipped)}
       >
         <div className="flip-inner">
 
-          {/* ---------- FRONT ---------- */}
+          {/* FRONT */}
           <div className="flip-front card">
-
             <div className="gold-strip" />
 
             <div className="card-content">
               <div className="header">
                 <div>
-                  <p className="college">B.N.N COLLEGE, BHIWANDI</p>
+                  <p className="college">BNN COLLEGE,BHIWANDI 421305</p>
                   <p className="year">Academic Year 2025–26</p>
                 </div>
                 <span className="id">#{student.studentId}</span>
@@ -76,6 +76,10 @@ export default function StudentProfile() {
                   <p className="class">
                     Class {student.className} – {student.division}
                   </p>
+                <p className="address-front">Address:-{student.address}</p>
+
+                
+
 
                   <div className="grid">
                     <Row label="Roll" value={student.roll} />
@@ -93,15 +97,20 @@ export default function StudentProfile() {
             </div>
           </div>
 
-          {/* ---------- BACK ---------- */}
+          {/* BACK */}
           <div className="flip-back card back">
-
             <div className="card-content back-content">
               <div>
-                <p className="college">B.N.N COLLEGE, BHIWANDI</p>
+                <p className="college">BNN COLLEGE,DHAMANKARNAKA,BHIWANDI 421305</p>
                 <p className="year">Academic Year 2025–26</p>
               </div>
-
+                   {/* 📍 ADDRESS */}
+    <div className="address-box">
+      <p className="address-title">Student Address</p>
+      <p className="address-text">
+        {student.address || "—"}
+      </p>
+    </div>
               <ul className="instructions">
                 <li>ID card must be carried daily</li>
                 <li>QR scan compulsory for attendance</li>
@@ -110,9 +119,7 @@ export default function StudentProfile() {
                 <li>Misuse may lead to disciplinary action</li>
               </ul>
 
-              <p className="issued">
-                Issued by College Authority
-              </p>
+              <p className="issued">Issued by College Authority</p>
             </div>
           </div>
 
