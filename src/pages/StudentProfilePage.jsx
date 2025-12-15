@@ -3,101 +3,139 @@ import { useParams, useNavigate } from "react-router-dom";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import AxiosToastError from "../utils/AxiosToastError";
-import { ArrowLeft, QrCode } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 
 export default function StudentProfile() {
-  const { id } = useParams(); // <-- studentId from route
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const fetchStudent = async () => {
-    try {
-      const response = await Axios({
-        ...SummaryApi.getStudentById(id),
-      });
-
-      if (response.data.success) {
-        setStudent(response.data.data);
-      }
-    } catch (error) {
-      AxiosToastError(error);
-    }
-    setLoading(false);
-  };
+  const [flipped, setFlipped] = useState(false);
 
   useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const res = await Axios({ ...SummaryApi.getStudentById(id) });
+        if (res.data?.success) setStudent(res.data.data);
+      } catch (e) {
+        AxiosToastError(e);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchStudent();
   }, [id]);
 
-  if (loading) {
-    return <p className="p-4 text-center">Loading student data...</p>;
-  }
+  if (loading) return <p className="text-center p-6 text-gray-400">Loading…</p>;
+  if (!student) return <p className="text-center p-6 text-red-600">Not Found</p>;
 
-  if (!student) {
-    return (
-      <p className="p-4 text-center text-red-600">Student Not Found</p>
-    );
-  }
-
-  const qrData = `${student.studentId}`;
-  const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-    qrData
-  )}`;
+  const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${student.studentId}`;
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-black via-slate-900 to-neutral-900 flex flex-col items-center justify-center p-6">
 
-      {/* Back Button */}
+      {/* BACK */}
       <button
         onClick={() => navigate("/dashboard/students")}
-        className="text-sm flex items-center gap-1 border px-3 py-1 rounded"
+        className="mb-6 flex items-center gap-2 text-sm text-gray-400 hover:text-white"
       >
-        <ArrowLeft size={18} /> Back
+        <ArrowLeft size={16} /> Back
       </button>
 
-      {/* Student Card */}
-      <div className="bg-white rounded-md shadow p-4">
-        <div className="flex flex-wrap gap-6">
+      {/* ===== FLIP CARD ===== */}
+      <div
+        className={`flip-card ${flipped ? "flipped" : ""}`}
+        onClick={() => setFlipped(!flipped)}
+      >
+        <div className="flip-inner">
 
-          {/* Profile Image */}
-          <img
-            src={student.photo || "/avatar.png"}
-            alt="Student"
-            className="w-32 h-32 rounded-xl object-cover border"
-          />
+          {/* ---------- FRONT ---------- */}
+          <div className="flip-front card">
 
-          {/* Info */}
-          <div className="text-sm space-y-2">
-            <p><strong>ID:</strong> {student.studentId}</p>
-            <p><strong>Name:</strong> {student.name}</p>
-            <p><strong>Roll:</strong> {student.roll}</p>
-            <p><strong>Class:</strong> {student.className} - {student.division}</p>
-            <p><strong>Mobile:</strong> {student.mobile}</p>
-            <p><strong>Father Name:</strong> {student.fatherName}</p>
-            <p><strong>Address:</strong> {student.address}</p>
-            <p><strong>Status:</strong> {student.status}</p>
+            <div className="gold-strip" />
+
+            <div className="card-content">
+              <div className="header">
+                <div>
+                  <p className="college">B.N.N COLLEGE, BHIWANDI</p>
+                  <p className="year">Academic Year 2025–26</p>
+                </div>
+                <span className="id">#{student.studentId}</span>
+              </div>
+
+              <div className="body">
+                <img
+                  src={student.photo || "/avatar.png"}
+                  alt="student"
+                  className="photo"
+                />
+
+                <div className="info">
+                  <p className="name">{student.name}</p>
+                  <p className="class">
+                    Class {student.className} – {student.division}
+                  </p>
+
+                  <div className="grid">
+                    <Row label="Roll" value={student.roll} />
+                    <Row label="Mobile" value={student.mobile} />
+                    <Row label="Father" value={student.fatherName} />
+                    <Row label="Status" value={student.status} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="footer">
+                <img src={qrURL} className="qr" alt="QR" />
+                <p>Tap card to view instructions</p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* QR Code */}
-        <div className="mt-6 text-center">
-          <QrCode size={42} className="mx-auto text-primary-200" />
-          <img
-            src={qrURL}
-            alt="QR Code"
-            className="mx-auto mt-3 border rounded p-2"
-          />
+          {/* ---------- BACK ---------- */}
+          <div className="flip-back card back">
 
-          <button
-            className="mt-3 px-4 py-2 border rounded hover:bg-gray-100"
-            onClick={() => window.print()}
-          >
-            Download / Print QR
-          </button>
+            <div className="card-content back-content">
+              <div>
+                <p className="college">B.N.N COLLEGE, BHIWANDI</p>
+                <p className="year">Academic Year 2025–26</p>
+              </div>
+
+              <ul className="instructions">
+                <li>ID card must be carried daily</li>
+                <li>QR scan compulsory for attendance</li>
+                <li>Card is non-transferable</li>
+                <li>Loss must be reported immediately</li>
+                <li>Misuse may lead to disciplinary action</li>
+              </ul>
+
+              <p className="issued">
+                Issued by College Authority
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
+
+      {/* DOWNLOAD */}
+      <button
+        onClick={() => window.print()}
+        className="mt-8 flex items-center gap-2 bg-yellow-500 text-black px-6 py-2 rounded-xl font-semibold hover:bg-yellow-400 shadow-lg"
+      >
+        <Download size={16} />
+        Download / Print ID Card
+      </button>
+    </div>
+  );
+}
+
+function Row({ label, value }) {
+  return (
+    <div>
+      <span className="label">{label}:</span>{" "}
+      <span className="value">{value || "-"}</span>
     </div>
   );
 }
