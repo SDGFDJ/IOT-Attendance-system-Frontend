@@ -9,8 +9,6 @@ import {
   ChevronRight
 } from "lucide-react";
 
-const TOTAL_LECTURES_PER_DAY = 6;
-
 export default function StudentAttendanceCalendar() {
   const { id: studentId } = useParams();
   const navigate = useNavigate();
@@ -27,6 +25,7 @@ export default function StudentAttendanceCalendar() {
     return d;
   }, []);
 
+  /* 📡 Fetch attendance */
   const fetchAttendance = async () => {
     try {
       setLoading(true);
@@ -50,18 +49,40 @@ export default function StudentAttendanceCalendar() {
     fetchAttendance();
   }, [month, year]);
 
+  /* ============================================================
+     🧠 NORMALIZE BACKEND DATA (🔥 MOST IMPORTANT FIX)
+     Works with:
+     { day, lectures }
+     { _id: { day }, lectures }
+     { date }
+  ============================================================ */
+  const attendanceMap = useMemo(() => {
+    const map = {};
+
+    attendance.forEach(item => {
+      const day =
+        item.day ??
+        item._id?.day ??
+        (item.date ? new Date(item.date).getDate() : null);
+
+      if (day != null) {
+        map[Number(day)] = item.lectures ?? 0;
+      }
+    });
+
+    return map;
+  }, [attendance]);
+
   /* 📅 Calendar math */
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startDay = new Date(year, month, 1).getDay();
 
-  /* 🧠 Month level future check */
-  const isFutureMonth =
-    year > today.getFullYear() ||
-    (year === today.getFullYear() && month > today.getMonth());
-
-  /* 🎨 FINAL STATUS LOGIC (BULLETPROOF) */
+  /* ============================================================
+     🎨 FINAL STATUS STYLE (BULLETPROOF)
+  ============================================================ */
   const getStatusStyle = (day) => {
-    const record = attendance.find((d) => d.day === day);
+    const lectures = attendanceMap[day] || 0;
+
     const dateObj = new Date(year, month, day);
     dateObj.setHours(0, 0, 0, 0);
 
@@ -69,36 +90,21 @@ export default function StudentAttendanceCalendar() {
 
     // 🩶 Sunday
     if (isSunday) {
-      return "bg-gray-300 text-gray-600";
+      return "bg-gray-300 text-gray-600 cursor-not-allowed";
     }
 
-    // ⚪ Future month
-    if (isFutureMonth) {
-      return "bg-slate-200 text-slate-500";
-    }
-
-    // ⚪ Current month but future day
+    // ⚪ Future date (NO RED, NO GREEN)
     if (dateObj > today) {
-      return "bg-slate-200 text-slate-500";
+      return "bg-slate-200 text-slate-500 cursor-not-allowed";
     }
 
-    // 🔴 Past / Today – no attendance
-    if (!record || record.lectures === 0) {
-      return "bg-red-500 text-white";
+    // 🟢 At least 1 lecture present
+    if (lectures > 0) {
+      return "bg-green-500 text-white hover:opacity-90";
     }
 
-    // 🟡 Low (1–2)
-    if (record.lectures <= 2) {
-      return "bg-yellow-200 text-yellow-800";
-    }
-
-    // 🟠 Partial (3–5)
-    if (record.lectures < TOTAL_LECTURES_PER_DAY) {
-      return "bg-orange-400 text-white";
-    }
-
-    // 🟢 Full
-    return "bg-green-500 text-white";
+    // 🔴 Past / Today but NO attendance
+    return "bg-red-500 text-white hover:opacity-90";
   };
 
   /* 🚫 Click control */
@@ -106,13 +112,7 @@ export default function StudentAttendanceCalendar() {
     const dateObj = new Date(year, month, day);
     dateObj.setHours(0, 0, 0, 0);
 
-    if (
-      isFutureMonth ||
-      dateObj > today ||
-      dateObj.getDay() === 0
-    ) {
-      return;
-    }
+    if (dateObj > today || dateObj.getDay() === 0) return;
 
     navigate(
       `/dashboard/attendance/details/${studentId}?day=${day}&month=${month + 1}&year=${year}`
@@ -133,7 +133,14 @@ export default function StudentAttendanceCalendar() {
       {/* 📅 Header */}
       <div className="flex justify-between items-center mb-4">
         <button
-          onClick={() => setMonth(m => (m === 0 ? 11 : m - 1))}
+          onClick={() => {
+            if (month === 0) {
+              setMonth(11);
+              setYear(y => y - 1);
+            } else {
+              setMonth(m => m - 1);
+            }
+          }}
           className="p-2 rounded-full bg-white shadow"
         >
           <ChevronLeft />
@@ -145,7 +152,14 @@ export default function StudentAttendanceCalendar() {
         </h2>
 
         <button
-          onClick={() => setMonth(m => (m === 11 ? 0 : m + 1))}
+          onClick={() => {
+            if (month === 11) {
+              setMonth(0);
+              setYear(y => y + 1);
+            } else {
+              setMonth(m => m + 1);
+            }
+          }}
           className="p-2 rounded-full bg-white shadow"
         >
           <ChevronRight />
