@@ -1,91 +1,117 @@
-import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { Link, useNavigate } from 'react-router-dom'
-import Divider from './Divider'
-import Axios from '../utils/Axios'
-import SummaryApi from '../common/SummaryApi'
-import { logout } from '../store/userSlice'
-import toast from 'react-hot-toast'
-import AxiosToastError from '../utils/AxiosToastError'
-import { HiOutlineExternalLink } from "react-icons/hi";
-import { GraduationCap } from "lucide-react"; 
-import isAdmin from '../utils/isAdmin'
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import Divider from "./Divider";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import { logout } from "../store/userSlice";
+import toast from "react-hot-toast";
+import AxiosToastError from "../utils/AxiosToastError";
+import { GraduationCap, X } from "lucide-react";
+import isAdmin from "../utils/isAdmin";
 
-const UserMenu = ({close}) => {
+const UserMenu = ({ close }) => {
+  const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const user = useSelector((state)=> state.user)
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-
-  const handleLogout = async()=> {
-      try {
-        const response = await Axios({
-          ...SummaryApi.logout
-        })
-        if(response.data.success){
-          close && close()
-          dispatch(logout())
-          localStorage.clear()
-          toast.success("Logged out successfully!")
-          navigate("/")
-        }
-      } catch (error) {
-        AxiosToastError(error)
+  const handleLogout = async () => {
+    try {
+      const response = await Axios({ ...SummaryApi.logout });
+      if (response.data.success) {
+        close?.();
+        dispatch(logout());
+        localStorage.clear();
+        toast.success("Logged out successfully");
+        navigate("/");
       }
-  }
+    } catch (error) {
+      AxiosToastError(error);
+    }
+  };
 
-  const handleClose = () => close && close()
+  const handleClose = () => close?.();
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
 
-      {/* User name + Profile */}
-      <div className='font-semibold'>My Account</div>
-      <div className='text-sm flex items-center gap-2'>
-        <span className='max-w-52 text-ellipsis line-clamp-1'>
+      {/* 🔝 HEADER */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-gray-800">
+          Account
+        </h2>
+        <button
+          onClick={handleClose}
+          className="p-2 rounded-full hover:bg-gray-100 transition"
+        >
+          <X size={22} />
+        </button>
+      </div>
+
+      {/* 👤 USER INFO */}
+      <div className="bg-gray-50 rounded-lg p-3 mb-4">
+        <p className="text-sm text-gray-500">Signed in as</p>
+        <p className="font-medium text-gray-800 truncate">
           {user.name || user.mobile}
-        </span>
-        <Link onClick={handleClose} to={"/dashboard/profile"} className='hover:text-green-600'>
-          <HiOutlineExternalLink size={15}/>
+        </p>
+
+        <Link
+          onClick={handleClose}
+          to="/dashboard/profile"
+          className="inline-block mt-2 text-sm text-green-600 hover:underline"
+        >
+          View Profile →
         </Link>
       </div>
 
-      <Divider/>
+      <Divider />
 
-      {/* MENU OPTIONS */}
-      <div className='text-sm grid gap-1'>
+      {/* 📋 MENU */}
+      <div className="flex-1 overflow-y-auto space-y-1 text-sm mt-2">
 
-        {/* Only Admin can see Students Management */}
+        {/* ADMIN OPTIONS */}
         {isAdmin(user.role) && (
           <>
-            <Link 
-              onClick={handleClose} 
-              to={"/dashboard/students"} 
-              className='px-2 hover:bg-green-100 flex items-center gap-2 py-1'
+            <Link
+              onClick={handleClose}
+              to="/dashboard/students"
+              className="flex items-center gap-3 px-3 py-3 rounded-md hover:bg-green-50 transition"
             >
-              <GraduationCap size={18}/>
-              Students
+              <GraduationCap size={18} />
+              <span>Students</span>
             </Link>
 
-            <Link onClick={handleClose} to={"/dashboard/add-student"} className='px-2 hover:bg-green-100 py-1'>
+            <Link
+              onClick={handleClose}
+              to="/dashboard/add-student"
+              className="px-3 py-3 rounded-md hover:bg-green-50 transition"
+            >
               + Add Student
             </Link>
+
+            <Divider />
           </>
         )}
 
-
-        
-        <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>
-          Save Address
+        {/* COMMON */}
+        <Link
+          onClick={handleClose}
+          to="/dashboard/address"
+          className="px-3 py-3 rounded-md hover:bg-gray-100 transition"
+        >
+          Saved Address
         </Link>
 
-        <button onClick={handleLogout} className='text-left px-2 hover:bg-red-200 py-1'>
+        {/* LOGOUT */}
+        <button
+          onClick={handleLogout}
+          className="w-full text-left px-3 py-3 rounded-md text-red-600 hover:bg-red-50 transition"
+        >
           Log Out
         </button>
-
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default UserMenu
+export default UserMenu;
